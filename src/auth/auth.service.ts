@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
-import type { JwtPayload, JwtSign, Payload } from './auth.interface';
+import type { JwtPayload, JwtPublisherPayload, JwtSign, Payload } from './auth.interface';
 import { User, UserService } from '../shared/user';
+import { Publisher } from 'src/gql/models';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,15 @@ export class AuthService {
     return null;
   }
 
+  public async validatePublisher(username: string, password: string): Promise<Omit<Publisher, 'password'> | null> {
+    const publisher = await this.user.fetchPublisher(username, password);
+
+    if (!publisher) return null
+
+    return publisher;
+  }
+
+
   public validateRefreshToken(data: Payload, refreshToken: string): boolean {
     if (!this.jwt.verify(refreshToken, { secret: this.config.get('jwtRefreshSecret') })) {
       return false;
@@ -35,6 +45,15 @@ export class AuthService {
 
   public jwtSign(data: Payload): JwtSign {
     const payload: JwtPayload = { sub: data.userId, username: data.username, roles: data.roles };
+
+    return {
+      access_token: this.jwt.sign(payload),
+      refresh_token: this.getRefreshToken(payload.sub),
+    };
+  }
+
+  public jwtSignPublisher(data: JwtPublisherPayload): JwtSign {
+    const payload = { sub: data.sub, username: data.username };
 
     return {
       access_token: this.jwt.sign(payload),

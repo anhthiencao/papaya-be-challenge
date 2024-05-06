@@ -20,7 +20,7 @@ export class SimpleResolver {
   @Roles('test')
   public user(@ReqUser() user: Payload): Payload {
     this.logger.info('user');
-
+    
     return user;
   }
 

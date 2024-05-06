@@ -14,3 +14,8 @@ export interface Payload {
   username: string;
   roles: string[];
 }
+
+export interface JwtPublisherPayload {
+  sub: string;
+  username: string;
+}
