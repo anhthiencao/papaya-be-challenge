@@ -2,6 +2,7 @@
 /// <reference types="../typings/global" />
 import * as dotenv from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import "module-alias/register"
 
 import { configuration } from '../src/config';
 

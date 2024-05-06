@@ -1,5 +1,4 @@
-// publisher.entity.ts
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID, HideField } from '@nestjs/graphql';
 
 @ObjectType()
 export class Publisher {
@@ -8,4 +7,11 @@ export class Publisher {
 
   @Field()
   name!: string;
+
+  @HideField()
+  username?: string;
+
+  @HideField()
+  password?: string;
 }
+

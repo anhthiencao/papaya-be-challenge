@@ -1,12 +1,8 @@
-import { InputType, Field, ID } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql';
 import { IsOptional, IsString } from 'class-validator';
 
 @InputType()
 export class NewsCreateInput {
-  @IsString()
-  @Field(() => ID)
-  id!: string;
-
   @IsString()
   @Field()
   title!: string;
@@ -20,6 +16,11 @@ export class NewsCreateInput {
   @IsString()
   @Field()
   categoryId?: string;
+
+	@IsOptional()
+	@IsString()
+	@Field()
+	publisherId?: string;
 }
 
 @InputType()

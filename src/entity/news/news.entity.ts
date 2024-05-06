@@ -1,8 +1,9 @@
 import { CategoryEntity } from '#entity/category';
 import { PublisherEntity } from '#entity/publisher';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
 
 @Entity('news')
+@Unique(['title'])
 export class NewsEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -21,8 +22,8 @@ export class NewsEntity {
   @JoinColumn({ name: 'categoryId' })
   category?: CategoryEntity;
 
-  @Column({ type: 'uuid' })
-  publisherId!: string;
+  @Column({ type: 'uuid', default: '1' })
+  publisherId?: string;
 
   @Column({ type: 'uuid' })
   categoryId!: string;

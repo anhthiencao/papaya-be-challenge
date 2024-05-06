@@ -38,6 +38,7 @@ void (async (): Promise<void> => {
     const url = await bootstrap();
     NestLogger.log(url, 'Bootstrap');
   } catch (error) {
+    console.log({error})
     NestLogger.error(error, 'Bootstrap');
   }
 })();

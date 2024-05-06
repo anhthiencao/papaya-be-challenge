@@ -14,27 +14,45 @@ import { NewsResolver } from './resolvers/news.resolver';
 import { NewsService } from './providers/news.service';
 import { CategoryService } from './providers/category.service';
 import { CategoryResolver } from './resolvers/category.resolver';
+import { NewsEntity } from '#entity/news';
+import { CategoryEntity } from '#entity/category';
+import { PublisherEntity } from '#entity/publisher';
+import { PaginateBuilder } from './common/providers';
+import { DataloaderService } from './dataloader/dataloader.service'; // Import DataloaderService
+import { DataloaderModule } from './dataloader/dataloader.module';
 
-/**
- * https://docs.nestjs.com/graphql/quick-start
- */
 @Module({
   imports: [
+    DataloaderModule,
     GraphQLModule.forRootAsync({
       driver: ApolloDriver,
-      useFactory: (config: ConfigService) => ({
+      imports: [DataloaderModule],
+      useFactory: async (
+        config: ConfigService, 
+        dataloaderService: DataloaderService // Inject DataloaderService
+      ) => ({
         ...config.get<GqlModuleOptions>('graphql'),
+        autoSchemaFile: true,
+        context: () => ({
+          loaders: dataloaderService.getLoaders(), // Use DataloaderService to get loaders
+        }),
       }),
-      inject: [ConfigService],
+      inject: [ConfigService, DataloaderService], // Inject DataloaderService
     }),
-    TypeOrmModule.forFeature([Sampletable1]),
+    TypeOrmModule.forFeature([Sampletable1, NewsEntity, CategoryEntity, PublisherEntity]),
   ],
   providers: [
-    SimpleResolver, SimpleService,
-    DateScalar, AuthResolver,
-    PublisherResolver, PublisherService,
-    NewsResolver, NewsService,
-    CategoryResolver, CategoryService
+    SimpleResolver, 
+    SimpleService,
+    DateScalar, 
+    AuthResolver,
+    PublisherResolver, 
+    PublisherService,
+    NewsResolver, 
+    NewsService,
+    CategoryResolver, 
+    CategoryService,
+    PaginateBuilder,
   ],
 })
 export class GqlModule {}

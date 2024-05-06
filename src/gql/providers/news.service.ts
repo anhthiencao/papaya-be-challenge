@@ -1,69 +1,82 @@
 import { Injectable } from '@nestjs/common';
 import { News } from '../models';
-import { NewsUpdateInput } from '../dto';
+import { NewsCreateInput, NewsUpdateInput } from '../dto';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { InjectRepository } from '@nestjs/typeorm';
+import { NewsEntity } from '#entity/news';
+import { In, Repository } from 'typeorm';
+import { FindAllArgs } from '../common';
+import { PaginateBuilder } from '../common/providers';
 
 @Injectable()
 export class NewsService {
-  private readonly news: News[] = [
-    {
-      id: '1',
-      title: 'News 1',
-      content: 'Content 1',
-      categoryId: '1',
-      publisherId: '1',
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      title: 'News 2',
-      content: 'Content 2',
-      categoryId: '2',
-      publisherId: '2',
-      createdAt: new Date(),
-    },
-    {
-      id: '3',
-      title: 'News 3',
-      content: 'Content 3',
-      categoryId: '3',
-      publisherId: '3',
-      createdAt: new Date(),
-    },
-  ];
+  constructor(
+    @InjectPinoLogger(NewsService.name) private readonly logger: PinoLogger,
+    @InjectRepository(NewsEntity) private readonly news: Repository<NewsEntity>,
+    private readonly paginateBuilder: PaginateBuilder,
+  ) {}
 
-  findAll(): Promise<News[]> {
-    return Promise.resolve(this.news);
-  }
+  async findAll(args?: FindAllArgs): Promise<News[]> {
+    this.logger.info('findAll news');
 
-  findById(id: string): Promise<News | undefined> {
-    return Promise.resolve(this.news.find((news) => news.id === id));
-  }
-
-  create(news: News): Promise<News> {
-    this.news.push(news);
-
-    return Promise.resolve(news);
-  }
-
-  update(id: string, updatedNews: NewsUpdateInput): Promise<News | null> {
-    const index = this.news.findIndex((item) => item.id === id);
-
-    if (index !== -1) {
-      this.news[index] = { ...this.news[index], ...updatedNews };
-      return Promise.resolve(this.news[index]);
+    if (!args) {
+      return this.news.find();
     }
 
-    return Promise.resolve(null);
+    const query = this.paginateBuilder.applyFindAllArgs(this.news.createQueryBuilder('news'), args);
+    return query.getMany();
   }
 
-  remove(id: string): Promise<boolean> {
-    const index = this.news.findIndex((item) => item.id === id);
+  async findById(id: string): Promise<News | null> {
+    this.logger.info('findById: ' + id);
+    return this.news.findOneBy({ id });
+  }
 
-    if (index !== -1) {
-      this.news.splice(index, 1);
-      return Promise.resolve(true);
+  async create(news: NewsCreateInput): Promise<News> {
+    console.log('HEHE')
+    const newNews = this.news.create(news);
+    return this.news.save(newNews);
+  }
+
+  async update(id: string, updatedNews: NewsUpdateInput): Promise<News | null> {
+    const news = await this.news.findOneBy({ id });
+    if (!news) {
+      return Promise.resolve(null);
     }
 
-    return Promise.resolve(false);
+    Object.assign(news, updatedNews);
+    return this.news.save(news);
+  }
+
+  async remove(id: string): Promise<boolean> {
+    const result = await this.news.delete({ id });
+    return !!result.affected;
+  }
+
+  public async getPublishersByNewsIds(
+    newsIds: readonly string[],
+  ): Promise<NewsEntity[]> {
+    const newsWithPublishers = await this.news.find(
+      {
+        where: {
+          id: In(newsIds),
+        },
+        relations: ['publisher'],
+      }
+    )
+
+    return newsWithPublishers
+  }
+
+  public async getStudentsFriendsByBatch(
+   newsIds: readonly string[],
+  ): Promise<(NewsEntity | any)[]> {
+    const newsList = await this.getPublishersByNewsIds(newsIds);
+    const mappedResults = this._mapResultToIds(newsList);
+    return mappedResults;
+  }
+
+  private _mapResultToIds(newsList: NewsEntity[]) {
+    return newsList.map((news: NewsEntity) => news.publisher);
   }
 }

@@ -5,19 +5,18 @@ export class News {
   @Field(() => ID)
   id!: string;
 
-  @Field()
-  title!: string;
+  title?: string;
 
   @Field({defaultValue: ''})
   content?: string;
 
   @Field(() => ID)
-  categoryId!: string;
+  categoryId?: string;
 
-  @Field(() => ID)
-  publisherId!: string;
+  @Field({defaultValue: '1'})
+  publisherId?: string;
 
   @Field()
-  createdAt!: Date;
+  createdAt?: Date;
 }
 
