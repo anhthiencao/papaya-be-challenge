@@ -1,4 +1,4 @@
-import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { IsArray, IsEnum, IsInt, IsString } from 'class-validator';
 
 export enum Operator {
@@ -9,34 +9,56 @@ export enum Operator {
   lt = 'lt',
   lte = 'lte',
   in = 'in',
-}
-
-export enum OrderingMode {
-  ASC = 'ASC',
-  DESC = 'DESC',
+  nin = 'nin',
 }
 
 registerEnumType(Operator, {
   name: 'Operator',
 });
 
+export enum OrderingMode {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
 registerEnumType(OrderingMode, {
   name: 'OrderingMode',
+});
+
+export enum OperatorWhere {
+  andWhere = 'andWhere',
+  orWhere = 'orWhere',
+}
+
+registerEnumType(OperatorWhere, {
+  name: 'OperatorWhere',
 });
 
 @InputType()
 export class Filtering {
   @Field()
   @IsString()
-  key!: string;
+  key?: string;
 
   @Field(() => Operator, { defaultValue: Operator.eq })
   @IsEnum(Operator)
   operator?: Operator;
 
+  @Field(() => OperatorWhere, { nullable: true, defaultValue: OperatorWhere.andWhere })
+  @IsEnum(OperatorWhere)
+  operatorWhere?: OperatorWhere;
+
   @Field(() => [String], { defaultValue: [] })
   @IsArray()
-  values!: string[];
+  values?: string[];
+
+  @Field(() => [Filtering], { nullable: true, defaultValue: [] })
+  @IsArray()
+  and?: Filtering[];
+
+  @Field(() => [Filtering], { nullable: true, defaultValue: [] })
+  @IsArray()
+  or?: Filtering[];
 }
 
 @InputType()
@@ -61,7 +83,7 @@ export class Order {
   value!: OrderingMode;
 }
 
-@InputType()
+@ArgsType()
 export class FindAllArgs {
   @Field(() => [Filtering], { nullable: true, defaultValue: [] })
   @IsArray()
@@ -82,12 +104,4 @@ export class FindAllArgs {
   @Field(() => Int, { defaultValue: 20 })
   @IsInt()
   limit?: number;
-
-  @Field(() => [FindAllArgs], { nullable: true, defaultValue: [] })
-  @IsArray()
-  and?: FindAllArgs[];
-
-  @Field(() => [FindAllArgs], { nullable: true, defaultValue: [] })
-  @IsArray()
-  or?: FindAllArgs[];
 }

@@ -5,6 +5,7 @@ export const config = {
     // migrations: [`${__dirname}/../../migration/**/*.{js,ts}`],
   },
   graphql: {
+
     debug: true,
     playground: {
       settings: {
@@ -13,6 +14,7 @@ export const config = {
     },
     autoSchemaFile: true,
     autoTransformHttpErrors: true,
+    fieldResolverEnhancers: ['guards'],
     // cors: { credentials: true },
     // sortSchema: true,
     // installSubscriptionHandlers: true,

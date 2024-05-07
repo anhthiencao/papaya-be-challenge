@@ -14,6 +14,9 @@ export declare global {
       DB_USER: string;
       DB_PASSWORD: string;
       DB_NAME: string;
+      DB_TABLE_CATEGORY: string;
+      DB_TABLE_PUBLISHER: string;
+      DB_TABLE_NEWS: string;
 
       JWT_SECRET: string;
       JWT_REFRESH_SECRET: string;

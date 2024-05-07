@@ -1,23 +1,18 @@
-import { Resolver, Query, Args, Mutation, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation, ResolveField, Parent, Context } from '@nestjs/graphql';
 import { Category, News, Publisher } from '../models';
 import { PublisherService } from '../providers';
 import { PublisherCreateInput, PublisherUpdateInput } from '../dto/publisher.input';
-import { FindAllArgs, Operator } from '../common';
-import { NewsService } from '../providers/news.service';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { PublisherEntity } from '#entity/publisher';
+import { FindAllArgs } from '../common';
+import { IDataloaders } from '../dataloader/dataloader.interface';
 
 @Resolver(() => Publisher)
 export class PublisherResolver {
   constructor(
     private readonly publisherService: PublisherService,
-    private readonly newsService: NewsService,
-    @InjectRepository(PublisherEntity) private readonly publisherRepository: Repository<PublisherEntity>,
   ) {}
 
   @Query(() => [Publisher])
-  public async publishers(@Args('args', { nullable: true, defaultValue: {} }) args?: FindAllArgs): Promise<Publisher[]> {
+  public async publishers(@Args() args?: FindAllArgs): Promise<Publisher[]> {
     return this.publisherService.findAll(args);
   }
 
@@ -37,25 +32,27 @@ export class PublisherResolver {
   }
 
   @ResolveField(() => [News])
-  public async news(@Parent() publisher: Publisher): Promise<News[]> {
-    return this.newsService.findAll({
-      filters: [
-        {
-          key: 'publisherId',
-          operator: Operator.eq,
-          values: [publisher.id],
-        },
-      ],
-    });
+  public async news(@Parent() publisher: Publisher, @Context() { loaders }: { loaders: IDataloaders }): Promise<News[]> {
+    const { id } = publisher;
+
+    if (!id) {
+      return [];
+    }
+
+    return loaders.publishersNewsLoader.load(id);
   }
 
   @ResolveField(() => [Category])
-  public async categories(@Parent() publisher: Publisher): Promise<Category[]> {
-    const publisherWithCategories = await this.publisherRepository.findOne({
-      where: { id: publisher.id },
-      relations: ['categories'],
-    });
+  public async categories(
+    @Parent() publisher: Publisher,
+    @Context() { loaders }: { loaders: IDataloaders }
+  ): Promise<Category[]> {
+    const { id } = publisher;
 
-    return publisherWithCategories?.categories ?? [];
+    if (!id) {
+      return [];
+    }
+    
+    return loaders.publishersCategoriesLoader.load(id);
   }
 }

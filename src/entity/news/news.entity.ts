@@ -1,8 +1,10 @@
 import { CategoryEntity } from '#entity/category';
 import { PublisherEntity } from '#entity/publisher';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import * as dotenv from 'dotenv';
 
-@Entity('news')
+dotenv.config();
+@Entity(process.env.DB_TABLE_NEWS)
 @Unique(['title'])
 export class NewsEntity {
   @PrimaryGeneratedColumn('uuid')

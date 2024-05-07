@@ -8,21 +8,14 @@ export class OwnerNewsGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const ctx = GqlExecutionContext.create(context);
-    const { id } = ctx.getArgs(); // Assuming the news id is passed as an argument
-	const { user } = ctx.getContext().req;
-	const news = await this.newsService.findById(id);
+    const { id } = ctx.getArgs();
+    const { user } = ctx.getContext().req;
 
-    // Check if the news exists
-    if (!news) {
-      return false;
-    }
+    return this.isUserNewsPublisher(id, user.userId);
+  }
 
-    // Check if the user is the publisher of the news
-    if (news.publisherId !== user.userId) {
-      return false;
-    }
-
-    return true;
+  private async isUserNewsPublisher(newsId: string, publisherId: string): Promise<boolean> {
+    const newsItem = await this.newsService.findById(newsId);
+    return newsItem ? newsItem.publisherId === publisherId : false;
   }
 }
-

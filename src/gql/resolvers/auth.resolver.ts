@@ -17,5 +17,4 @@ export class AuthResolver {
 
     return this.authService.jwtSignPublisher({ sub: publisher.id, username: publisher.name});
   }
-
 }

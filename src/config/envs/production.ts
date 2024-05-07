@@ -31,5 +31,10 @@ export const config = {
     debug: false,
     playground: false,
   },
+  models: {
+    category: process.env.DB_TABLE_CATEGORY || 'category',
+    publisher: process.env.DB_TABLE_PUBLISHER || 'publisher',
+    news: process.env.DB_TABLE_NEWS || 'news',
+  },
   foo: 'pro-bar',
 };

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
-import type { JwtPayload, JwtPublisherPayload, JwtSign, Payload } from './auth.interface';
+import type { JwtPayload, JwtPublisherPayload, JwtSign, Payload, jwtSignPublisher } from './auth.interface';
 import { User, UserService } from '../shared/user';
 import { Publisher } from 'src/gql/models';
 
@@ -16,7 +16,6 @@ export class AuthService {
 
   public async validateUser(username: string, password: string): Promise<User | null> {
     const user = await this.user.fetch(username);
-
     if (user.password === password) {
       const { password: pass, ...result } = user;
       return result;
@@ -52,12 +51,12 @@ export class AuthService {
     };
   }
 
-  public jwtSignPublisher(data: JwtPublisherPayload): JwtSign {
+  public jwtSignPublisher(data: JwtPublisherPayload): jwtSignPublisher {
     const payload = { sub: data.sub, username: data.username };
 
     return {
       access_token: this.jwt.sign(payload),
-      refresh_token: this.getRefreshToken(payload.sub),
+      // refresh_token: this.getRefreshToken(payload.sub),
     };
   }
 

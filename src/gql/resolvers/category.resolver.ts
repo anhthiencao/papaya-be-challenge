@@ -17,9 +17,7 @@ export class CategoryResolver {
   ) {}
 
   @Query(() => [Category])
-  async categories(
-    @Args('args', { nullable: true }) args?: FindAllArgs
-  ): Promise<Category[]> {
+  async categories(@Args() args?: FindAllArgs): Promise<Category[]> {
     return this.categoryService.findAll(args);
   }
 
@@ -44,7 +42,7 @@ export class CategoryResolver {
       filters: [
         {
           key: 'categoryId',
-          operator: Operator.eq, 
+          operator: Operator.eq,
           values: [category.id],
         },
       ],

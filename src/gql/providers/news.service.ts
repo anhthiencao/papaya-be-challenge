@@ -7,76 +7,91 @@ import { NewsEntity } from '#entity/news';
 import { In, Repository } from 'typeorm';
 import { FindAllArgs } from '../common';
 import { PaginateBuilder } from '../common/providers';
+import { ConfigService } from '@nestjs/config';
+import type { Config, Models } from 'src/config';
 
 @Injectable()
 export class NewsService {
   constructor(
     @InjectPinoLogger(NewsService.name) private readonly logger: PinoLogger,
-    @InjectRepository(NewsEntity) private readonly news: Repository<NewsEntity>,
+    @InjectRepository(NewsEntity) private readonly newsRepository: Repository<NewsEntity>,
     private readonly paginateBuilder: PaginateBuilder,
+    private readonly configService: ConfigService<Config>,
   ) {}
 
   async findAll(args?: FindAllArgs): Promise<News[]> {
-    this.logger.info('findAll news');
-
-    if (!args) {
-      return this.news.find();
+    if (args) {
+      const newsQueryBuilder = this.newsRepository.createQueryBuilder(this.configService.get<Models>('models')?.news || 'news');
+      const paginatedQuery = this.paginateBuilder.applyFindAllArgs(newsQueryBuilder, args);
+      return paginatedQuery.getMany();
     }
-
-    const query = this.paginateBuilder.applyFindAllArgs(this.news.createQueryBuilder('news'), args);
-    return query.getMany();
+    return this.newsRepository.find();
   }
 
   async findById(id: string): Promise<News | null> {
     this.logger.info('findById: ' + id);
-    return this.news.findOneBy({ id });
+    return this.newsRepository.findOneBy({ id });
   }
 
   async create(news: NewsCreateInput): Promise<News> {
-    console.log('HEHE')
-    const newNews = this.news.create(news);
-    return this.news.save(newNews);
+    const newNews = this.newsRepository.create(news);
+    return this.newsRepository.save(newNews);
   }
 
-  async update(id: string, updatedNews: NewsUpdateInput): Promise<News | null> {
-    const news = await this.news.findOneBy({ id });
-    if (!news) {
-      return Promise.resolve(null);
+  async update(newsId: string, updatePayload: NewsUpdateInput): Promise<News | null> {
+    const existingNews = await this.newsRepository.findOneBy({ id: newsId });
+    if (!existingNews) {
+      return null;
     }
 
-    Object.assign(news, updatedNews);
-    return this.news.save(news);
+    Object.assign(existingNews, updatePayload);
+    return this.newsRepository.save(existingNews);
   }
 
   async remove(id: string): Promise<boolean> {
-    const result = await this.news.delete({ id });
+    const result = await this.newsRepository.delete({ id });
     return !!result.affected;
   }
 
-  public async getPublishersByNewsIds(
-    newsIds: readonly string[],
-  ): Promise<NewsEntity[]> {
-    const newsWithPublishers = await this.news.find(
-      {
-        where: {
-          id: In(newsIds),
-        },
-        relations: ['publisher'],
-      }
-    )
+  public async getPublishersByNewsIds(newsIds: readonly string[]): Promise<NewsEntity[]> {
+    const newsWithPublishers = await this.newsRepository.find({
+      where: {
+        id: In(newsIds),
+      },
+      relations: [this.configService.get<Models>('models')?.publisher || 'publisher'],
+    });
 
-    return newsWithPublishers
+    return newsWithPublishers;
   }
 
-  public async getStudentsFriendsByBatch(
-   newsIds: readonly string[],
-  ): Promise<(NewsEntity | any)[]> {
+  public async getPublishersByNewsIdsBatching(newsIds: readonly string[]): Promise<(NewsEntity | any)[]> {
     const newsList = await this.getPublishersByNewsIds(newsIds);
-    const mappedResults = this._mapResultToIds(newsList);
+    const mappedResults = this._mapPublishers(newsList);
     return mappedResults;
   }
 
-  private _mapResultToIds(newsList: NewsEntity[]) {
+  private _mapPublishers(newsList: NewsEntity[]) {
     return newsList.map((news: NewsEntity) => news.publisher);
+  }
+
+  public async getNewsWithCategoriesByNewsIds(newsIds: readonly string[]): Promise<NewsEntity[]> {
+    const newsWithCategories = await this.newsRepository.find({
+      where: {
+        id: In(newsIds),
+      },
+      relations: [this.configService.get<Models>('models')?.category || 'category'],
+    });
+
+    return newsWithCategories;
+  }
+
+  public async getCategoriesByNewsIdsBatching(newsIds: readonly string[]): Promise<(NewsEntity | any)[]> {
+    const newsList = await this.getNewsWithCategoriesByNewsIds(newsIds);
+    const mappedResults = this._mapCategories(newsList);
+    return mappedResults;
+  }
+
+  private _mapCategories(newsList: NewsEntity[]) {
+    return newsList.map((news: NewsEntity) => news.category);
   }
 }

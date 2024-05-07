@@ -4,35 +4,32 @@ import { NewsService } from '../providers/news.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard, OwnerNewsGuard } from 'src/auth';
 import { NewsCreateInput, NewsUpdateInput } from '../dto/news.input';
-import { CategoryService } from '../providers/category.service';
-import { ReqUser } from 'src/common';
-import { FindAllArgs } from '../common';
+import { FindAllArgs, Operator } from '../common';
 import { IDataloaders } from '../dataloader/dataloader.interface';
+import { ReqUser } from 'src/common';
 
 @Resolver(() => News)
 export class NewsResolver {
-  constructor(
-    private readonly newsService: NewsService,
-    private readonly categoryService: CategoryService,
-  ) {}
+  constructor(private readonly newsService: NewsService) {}
 
-  @Query(() => [News])
-  async news(@Args('args', { nullable: true }) args?: FindAllArgs): Promise<News[]> {
+  @Query(() => [News], { nullable: true })
+  async news(@Args() args?: FindAllArgs): Promise<News[]> {
     return this.newsService.findAll(args);
   }
 
-  @Query(() => News)
+  @Query(() => News, { nullable: true })
   async newsDetail(@Args('id') id: string): Promise<News | null> {
     return this.newsService.findById(id);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Query(() => News)
+  @Query(() => [News], { nullable: true })
   async myNews(@ReqUser() user: Payload): Promise<News[]> {
     return this.newsService.findAll({
       filters: [
         {
           key: 'publisherId',
+          operator: Operator.eq,
           values: [user.userId],
         },
       ],
@@ -41,7 +38,11 @@ export class NewsResolver {
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => News)
-  async createNews(@Args('input') newsCreateInput: NewsCreateInput): Promise<News> {
+  async createNews(
+    @Args('input') newsCreateInput: NewsCreateInput,
+    @ReqUser() user: Payload
+  ): Promise<News> {
+    newsCreateInput.publisherId = user.userId
     return this.newsService.create(newsCreateInput);
   }
 
@@ -57,12 +58,15 @@ export class NewsResolver {
     return this.newsService.remove(id);
   }
 
-  @ResolveField(() => Category)
-  async category(@Parent() news: News): Promise<Category | null> {
-    if (!news.categoryId) {
+  @ResolveField(() => Category, { nullable: true })
+  async category(@Parent() news: News, @Context() { loaders }: { loaders: IDataloaders }): Promise<Category | null> {
+    const { id } = news;
+
+    if (!id) {
       return null;
     }
-    return this.categoryService.findById(news.categoryId);
+
+    return loaders.newsCategoriesLoader.load(id);
   }
 
   @ResolveField(() => Publisher)
@@ -73,6 +77,6 @@ export class NewsResolver {
       return null;
     }
 
-    return loaders.publishersLoader.load(id);
+    return loaders.newsPublishersLoader.load(id);
   }
 }

@@ -1,4 +1,4 @@
-import { InputType, Field } from '@nestjs/graphql';
+import { InputType, Field, HideField } from '@nestjs/graphql';
 import { IsOptional, IsString } from 'class-validator';
 
 @InputType()
@@ -17,9 +17,9 @@ export class NewsCreateInput {
   @Field()
   categoryId?: string;
 
-	@IsOptional()
-	@IsString()
-	@Field()
+  @IsOptional()
+  @IsString()
+	@HideField()
 	publisherId?: string;
 }
 

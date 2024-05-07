@@ -13,5 +13,10 @@ export const config = {
     },
     autoLoadEntities: true,
   },
+  models: {
+    category: process.env.DB_TABLE_CATEGORY || 'category',
+    publisher: process.env.DB_TABLE_PUBLISHER || 'publisher',
+    news: process.env.DB_TABLE_NEWS || 'news',
+  },
   foo: 'dev-bar',
 };
