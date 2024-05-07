@@ -9,19 +9,19 @@ export class PublisherEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column('varchar', { nullable: false, length: 255, name: 'name' })
   name!: string;
 
-  @Column()
+  @Column('varchar', { nullable: false, length: 255, name: 'username' })
   username!: string;
 
-  @Column()
+  @Column('varchar', { nullable: false, length: 255, name: 'password' })
   password!: string;
 
-  @ManyToMany(() => CategoryEntity, category => category.publishers)
+  @ManyToMany(() => CategoryEntity, (category: CategoryEntity) => category.publishers)
   @JoinTable(
     {
-      name: process.env.DB_TABLE_PUBLISHER,
+      name: process.env.DB_TABLE_NEWS,
       joinColumn: {
         name: 'publisherId',
         referencedColumnName: 'id'

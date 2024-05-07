@@ -1,22 +1,21 @@
 import { PublisherEntity } from '#entity/publisher';
-import { Entity, PrimaryGeneratedColumn, Column, Unique, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, Unique, ManyToMany, JoinTable, PrimaryGeneratedColumn } from 'typeorm';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
-
 @Entity(process.env.DB_TABLE_CATEGORY)
-@Unique(['name'])
+@Unique(['id', 'name'])
 export class CategoryEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column('varchar', { nullable: false, length: 255, name: 'name' })
   name!: string;
 
-  @ManyToMany(() => PublisherEntity, (publisher) => publisher.categories)
+  @ManyToMany(() => PublisherEntity, (publisher: PublisherEntity) => publisher.categories)
   @JoinTable(
     {
-      name: process.env.DB_TABLE_CATEGORY,
+      name: process.env.DB_TABLE_NEWS,
       joinColumn: {
         name: 'categoryId',
         referencedColumnName: 'id',

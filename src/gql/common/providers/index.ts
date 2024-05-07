@@ -1,1 +1,1 @@
-export * from './builder-paginate'
+export * from './builder-paginate.service'

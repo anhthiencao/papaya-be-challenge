@@ -14,7 +14,7 @@ export class OwnerNewsGuard implements CanActivate {
     return this.isUserNewsPublisher(id, user.userId);
   }
 
-  private async isUserNewsPublisher(newsId: string, publisherId: string): Promise<boolean> {
+  public async isUserNewsPublisher(newsId: string, publisherId: string): Promise<boolean> {
     const newsItem = await this.newsService.findById(newsId);
     return newsItem ? newsItem.publisherId === publisherId : false;
   }
