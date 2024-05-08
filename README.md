@@ -48,6 +48,8 @@ npm run start:repl
 Run [http://localhost:3000](http://localhost:3000)
 
 ## Test
+> **_NOTE:_**  This feature may not be available
+
 
 ```sh
 npm test # exclude e2e
@@ -198,3 +200,149 @@ interface ThirdCustomeUser extends CustomeUser {}
   - [Nest Sample](https://github.com/nestjs/nest/tree/master/sample)
   - [Awesome Nest](https://github.com/nestjs/awesome-nestjs)
 - [TypeORM](https://typeorm.io)
+
+# GraphQL API Documentation(code-challenge)
+
+Welcome to the documentation for our GraphQL API. This API provides functionality for managing news articles, publishers, categories, and authentication.
+
+## Table of Contents
+1. [Authentication](#authentication)
+2. [Queries](#queries)
+   - [News Queries](#news-queries)
+   - [Publisher Queries](#publisher-queries)
+   - [Category Queries](#category-queries)
+3. [Mutations](#mutations)
+   - [News Mutations](#news-mutations)
+   - [Publisher Mutations](#publisher-mutations)
+   - [Category Mutations](#category-mutations)
+4. [Field Resolvers](#field-resolvers)
+
+## Authentication
+
+To access certain features of the API, authentication is required. We use JSON Web Tokens (JWT) for authentication. When making requests that require authentication, you need to include the JWT token in the request headers(Authorization header).
+
+#### login(Query)
+- **Description:** Login with username and password.
+- **Arguments:**
+  - `loginInput`: username and password.
+- **Returns:** JWT `access_token`.
+
+
+## Queries
+
+### News Queries
+
+#### news
+- **Description:** Retrieve a list of news articles.
+- **Arguments:**
+  - `args`: Optional arguments for filtering, sorting, and pagination.
+- **Returns:** An array of news articles.
+
+#### newsDetail
+- **Description:** Retrieve details of a specific news article.
+- **Arguments:**
+  - `id`: The ID of the news article.
+- **Returns:** Details of the specified news article.
+
+#### myNews
+- **Description:** Retrieve news articles owned by the authenticated user.
+- **Authentication Required:** Yes
+- **Returns:** An array of news articles owned by the authenticated user.
+
+### Publisher Queries
+
+#### publishers
+- **Description:** Retrieve a list of publishers.
+- **Arguments:**
+  - `args`: Optional arguments for filtering, sorting, and pagination.
+- **Returns:** An array of publishers.
+
+#### publisher
+- **Description:** Retrieve details of a specific publisher.
+- **Arguments:**
+  - `id`: The ID of the publisher.
+- **Returns:** Details of the specified publisher.
+
+### Category Queries
+
+#### categories
+- **Description:** Retrieve a list of categories.
+- **Arguments:**
+  - `args`: Optional arguments for filtering, sorting, and pagination.
+- **Returns:** An array of categories.
+
+#### category
+- **Description:** Retrieve details of a specific category.
+- **Arguments:**
+  - `id`: The ID of the category.
+- **Returns:** Details of the specified category.
+
+## Mutations
+
+### News Mutations
+
+#### createNews
+- **Description:** Create a new news article.
+- **Arguments:**
+  - `input`: Details of the news article to be created.
+- **Authentication Required:** Yes
+- **Returns:** The created news article.
+
+#### updateNews
+- **Description:** Update an existing news article.
+- **Arguments:**
+  - `id`: The ID of the news article to be updated.
+  - `input`: Details of the news article to be updated.
+- **Authentication Required:** Yes (Only allowed for the owner of the news article)
+- **Returns:** The updated news article.
+
+#### removeNews
+- **Description:** Delete a news article.
+- **Arguments:**
+  - `id`: The ID of the news article to be deleted.
+- **Authentication Required:** Yes (Only allowed for the owner of the news article)
+- **Returns:** `true` if the news article is successfully deleted.
+
+### Publisher Mutations
+
+#### createPublisher
+- **Description:** Create a new publisher.
+- **Arguments:**
+  - `input`: Details of the publisher to be created.
+- **Returns:** The created publisher.
+
+#### updatePublisher
+- **Description:** Update an existing publisher.
+- **Arguments:**
+  - `id`: The ID of the publisher to be updated.
+  - `input`: Details of the publisher to be updated.
+- **Returns:** The updated publisher.
+
+### Category Mutations
+
+#### createCategory
+- **Description:** Create a new category.
+- **Arguments:**
+  - `input`: Details of the category to be created.
+- **Returns:** The created category.
+
+#### updateCategory
+- **Description:** Update an existing category.
+- **Arguments:**
+  - `id`: The ID of the category to be updated.
+  - `input`: Details of the category to be updated.
+- **Returns:** The updated category.
+
+## Field Resolvers
+
+#### news (Field Resolver)
+- **Description:** Retrieve news articles associated with the publisher or category.
+- **Returns:** An array of news articles associated with the publisher or category.
+
+#### categories (Field Resolver)
+- **Description:** Retrieve categories associated with the publisher.
+- **Returns:** An array of categories associated with the publisher.
+
+#### publishers (Field Resolver)
+- **Description:** Retrieve publishers associated with the category.
+- **Returns:** An array of publishers associated with the category.
