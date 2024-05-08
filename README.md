@@ -223,8 +223,8 @@ Welcome to the documentation for our GraphQL API. This API provides functionalit
 To access certain features of the API, authentication is required. We use JSON Web Tokens (JWT) for authentication. When making requests that require authentication, you need to include the JWT token in the request headers(Authorization Bearer token).
 
 #### login(Query)
-
-- **Description:** Login with username and password.
+> **_NOTE:_** Register in `createPublisher` mutation.
+- **Description:** Login with username and password().
 - **Arguments:**
   - `loginInput`: username and password.
 - **Returns:** JWT `access_token`.
