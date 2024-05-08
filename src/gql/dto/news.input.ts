@@ -12,10 +12,9 @@ export class NewsCreateInput {
   @Field({ defaultValue: '' })
   content?: string;
 
-  @IsOptional()
   @IsString()
   @Field()
-  categoryId?: string;
+  categoryId!: string;
 
   @IsOptional()
   @IsString()
